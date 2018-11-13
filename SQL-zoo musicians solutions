@@ -1,0 +1,118 @@
+Solutions to Musicians - Hard Questions
+
+Available nowhere else on the internet
+
+http://sqlzoo.net/wiki/Musicians_hard_questions
+
+Scripts can be pasted and run at link above
+
+11.
+
+select a.m_name, c.place_town
+from
+(select * from musician) a
+join
+(select born_in from musician where m_name = 'James First') b
+join
+(select * from place) c
+
+on a.born_in = b.born_in and a.born_in = c.place_no
+
+12.
+
+select a.m_name as musician, count(e.cmpn_no) as compositions, count(c.instrument) as instruments
+from
+(select * from musician) a
+join
+(select * from place where place_country = 'England') b
+join
+(select * from performer) c
+join
+(select * from composer) d
+join
+(select * from has_composed) e
+
+on a.born_in = b.place_no and a.m_no = c.perf_is and a.m_no= d.comp_is and d.comp_no = e.cmpn_no
+
+group by a.m_name
+
+13.
+select b.band_name as band, a.m_name as conductor, b.band_contact as contact
+from
+(select * from musician) a
+join
+(select * from band) b 
+join
+(select * from concert where concert_venue = 'Royal Albert Hall') c
+join
+(select * from performance) d
+on a.m_no = d.conducted_by and d.performed_in = c.concert_no and d.gave = b.band_no
+
+14.
+# Try changing third column to 'Salzburg' so it will populate
+
+select a.* from
+(select m_name as name, 
+
+case when m_no in (select m_no from musician
+join place on musician.born_in = place.place_no and place.place_town ='Glasgow')
+then 'Yes' else null end as Born_In,
+
+case when m_no in (select m_no from musician
+join place on musician.living_in = place.place_no and place.place_town ='Glasgow')
+then 'Yes' else null end as Lives_In,
+
+case when m_no in (select a.m_no from
+(select m_no from musician) a
+join
+(select * from plays_in) b 
+join
+(select * from performance) c
+join
+(select * from place where place.place_town ='Glasgow' ) d
+join
+(select * from concert) e
+on a.m_no = b.player 
+and b.band_id = c.gave 
+and c.performed_in = e.concert_no 
+and d.place_no = e.concert_in) then 'Yes' else null end as Performed_In,
+
+case when m_no in
+(select a.m_no
+from
+(select m_no from musician) a
+join
+(select * from plays_in) b
+join
+(select * from band) c
+join
+(select * from place where place.place_town ='Glasgow' ) d
+on a.m_no = b.player and b.band_id = c.band_no and c.band_home = d.place_no)
+then 'Yes' else null end as In_Band_In
+
+from musician ) a
+where (a.born_in is not null or a.lives_in is not null or a.performed_in is not null or a.in_band_in is not null)
+
+15.
+
+# Bad question - there are no musicians that overlap bands in this dataset
+
+select a.player, a.band_id, b.band_id
+
+from
+
+(select * from plays_in
+where band_id in
+(select b.band_id from musician a
+join plays_in b
+on a.m_no = b.player where a.m_name = 'James First')) a
+
+join
+
+(select * from plays_in
+where band_id in
+(select b.band_id from musician a
+join plays_in b
+on a.m_no = b.player where a.m_name = 'Davis Heavan')) b
+
+on a.player = b.player
