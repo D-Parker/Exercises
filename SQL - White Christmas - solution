@@ -1,0 +1,19 @@
+4.
+A person's White Christmas Count (wcc) is the number of White Christmases they were exposed to as a child (between 3 and 12 inclusive assuming they were born at the beginning of the year and were about 1 year old on their first Christmas).
+Charles Dickens's wcc was 8.
+List all the years and the wcc for children born in each year of the data set. Only show years where the wcc was at least 7.
+
+Paste and run at:
+http://sqlzoo.net/wiki/White_Christmas
+
+select a.yr as year, sum(b.white) as wcc
+from
+(select distinct yr from hadcet) a
+join
+(select yr, case when min(m12/10)<0 then 1 else null end as white 
+from hadcet
+where dy between 21 and 25
+group by yr) b
+on b.yr between a.yr + 2 and a.yr + 11
+group by a.yr
+having sum(b.white) >=7
